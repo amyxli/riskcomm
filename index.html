@@ -195,7 +195,19 @@
     choices: ['I consent']
   }
 
-  //timeline.push(consent)
+  timeline.push(consent)
+
+  //Note on phone usage and other browsers
+  var phoneNote = {
+      type: 'html-button-response',
+      stimulus: "<p style='text-align:left;'><b>An important note before we begin... </b></p> <p style='text-align:left;'>This experiment is now online instead of in-person in a controlled computer lab due to the current COVID-19 pandemic.</br> Please focus on the experiment and refrain from activities such as:</p>"+
+      "<p style='text-align:left;'>- <i>Switching to other tabs on your browser (this will be monitored via the experiment)</br> - Using your mobile phone/cell phone</br> - Communicating with others</br></br></i></p>"+ 
+      "<p style='text-align:left;'>This way, you are helping to provide data that is useful for psychological research. We thank you for your cooperation!</p>",
+      choices: ["I Understand"],
+      prompt: "</br><b><p>Please place your phone out of sight.</p></b>"
+    };
+
+  timeline.push(phoneNote);
 
   // study info
 
@@ -205,7 +217,7 @@
     choices: ['Start!'],
   }
 
-  //timeline.push(expStart)
+  timeline.push(expStart)
 
   // demographics
   var demographics = {
