@@ -1,0 +1,472 @@
+<!doctype html>
+<html>
+
+  <head>
+    <title>UNSW CCS</title>
+    <script src="https://code.jquery.com/jquery-2.1.4.js" integrity="sha256-siFczlgw4jULnUICcdm9gjQPZkw/YPDqhQ9+nAOScE4=" crossorigin="anonymous"></script>
+    <script src="./jsCORICAL/jspsych.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-preload.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-fullscreen.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-instructions.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-survey-multi-choice.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-survey-multi-select.js"></script>
+	  <script src="./jsCORICAL/plugins/jspsych-html-button-response.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-survey-likert.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-survey-text.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="./jsCORICAL/plugins/jspsych-survey-html-form.js"></script>
+    <link href="./jsCORICAL/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+  </head>
+
+  <style>
+  .row.centered {
+    height: 30vh;
+    display: flex;
+    align-items: top;
+    justify-content: top;
+  }
+
+  </style>
+
+  <script>
+  
+  /* initialise timeline*/
+  var timeline=[];
+  var introloop=[];
+
+  window.onbeforeunload = function(){
+    return "Are you sure you want to leave the experiment?";
+  };
+
+
+
+  /* define functions needed */
+
+  // change the display property of a set of objects: this is used to hide the "submit"/"next" etc button to proceed
+  // to next trial for X seconds
+  
+  function setDisplay(theClass, theValue) {
+        var i, classElements = document.getElementsByClassName(theClass);
+        for (i = 0; i < classElements.length; i = i + 1) {
+            classElements[i].style.display = theValue;
+        }
+  };
+
+  function shuffle(array) {
+      var currentIndex = array.length, temporaryValue, randomIndex;
+
+      // While there remain elements to shuffle...
+      while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+      }
+
+      return array;
+  }
+
+  function saveData(name, data){
+    	var xhr = new XMLHttpRequest();
+    	xhr.open('POST', 'save_data.php'); // 'write_data.php' is the path to the php file described above.
+    	xhr.setRequestHeader('Content-Type', 'application/json');
+    	xhr.send(JSON.stringify({filename: filename, filedata: data})); //specify a variable "filename"
+  };
+
+  window.onbeforeunload = function(){
+    	return "Are you sure you want to leave the experiment?";
+  };
+
+  function startExperiment(){
+      function download_data(data) {
+        var csvString = jsPsych.data.dataAsCSV();
+        var a = document.createElement('a');
+        a.href = 'data:attachment/csv,' + csvString;
+        a.target = '_blank';
+        a.download = 'ExperimentData.csv';
+
+        document.body.appendChild(a);
+        a.click();
+      };
+
+      jsPsych.data.addProperties({
+
+      });
+      /* start the experiment */
+      jsPsych.init({
+        timeline: timeline,
+        show_progress_bar: false,
+        on_finish: function() {
+          jsPsych.data.get().localSave('csv','test.csv')
+         }, // uncomment to locally save data file */
+         /*on_finish: function(data){
+			    saveData(filename, jsPsych.data.get().csv());
+			    document.write('<div id="endscreen" class="endscreen" style="width:1000px"><div class="endscreen" style="text-align:center; border:0px solid; padding:10px; font-size:120%; width:800px; float:right"><p><br><br><br>The study is now complete. Thank you for your participation!<br><br>You can now close this window.</p></div></div>')
+		    }*/
+      });
+  };
+
+  /* define images needed */
+
+  var stimuli = [
+    'imgCORICAL/opt1_base0_comp0_bar0_eval0.png',
+    'imgCORICAL/opt2_base0_comp0_bar1_eval1.png',
+    'imgCORICAL/opt3_base0_comp1_bar0_eval1.png',
+    'imgCORICAL/opt4_base0_comp1_bar1_eval0.png',
+    'imgCORICAL/opt5_base1_comp0_bar0_eval1.png',
+    'imgCORICAL/opt6_base1_comp0_bar1_eval0.png',
+    'imgCORICAL/opt7_base1_comp1_bar0_eval0.png',
+    'imgCORICAL/opt8_base1_comp1_bar1_eval1.png',
+  ];
+  
+  // variables we need
+
+  // each "question"
+  var questions = [
+    shuffle([0,2,3,7].map(x=>stimuli[x])), //Q1
+    shuffle([0,1,2,6].map(x=>stimuli[x])),
+    shuffle([2,4,5,6].map(x=>stimuli[x])),
+    shuffle([2,3,5,7].map(x=>stimuli[x])),
+    shuffle([0,5,6,7].map(x=>stimuli[x])),
+    shuffle([1,4,5,7].map(x=>stimuli[x])),
+    shuffle([2,3,4,6].map(x=>stimuli[x])),
+    shuffle([0,1,3,4].map(x=>stimuli[x])),
+    shuffle([1,3,5,6].map(x=>stimuli[x])),
+    shuffle([0,1,2,5].map(x=>stimuli[x])),
+    shuffle([1,3,6,7].map(x=>stimuli[x])),
+    shuffle([0,4,6,7].map(x=>stimuli[x])),
+    shuffle([1,2,4,7].map(x=>stimuli[x])),
+    shuffle([0,3,4,5].map(x=>stimuli[x])) //Q14
+  ]
+
+  var questions = shuffle(questions);
+  
+  // trial number
+  trialN = 0
+
+  // preload media
+  var preload = {
+    type: 'preload',
+    images: stimuli,
+  }
+
+  timeline.push(preload)
+
+  // welcome message
+  var enter_fullscreen = {
+    type: 'fullscreen',
+    fullscreen_mode: true,
+    message: '<p style="text-align:left;">Welcome and thank you for signing up to participate in this study.'+
+    '<p style="text-align:left;"><b>Improving Health communication</b> is a study examining how risk communication formats can influence people\'s perceptions and attitudes towards health-related risks.</p>' +
+    '<p style="text-align:left;">It involves the following steps:</p>' +
+      '<p style="text-align:left;">1. Because this is a University research project, we ask for your informed consent. <br>' +
+      '2. We will then ask you some demographics questions. <br>' +
+      '3. Next, we give you the experiment itself with instructions to explain the task. <br>' +
+      '4. Finally, you will be debriefed about the purpose of the task you have completed. </p>' + 
+    '<p style="text-align:left;">The total time taken should be about 20 minutes. Please do not use the "back" button on your browser or close the window until you reach the end.'+
+    '<br>If something does go wrong, please contact the experimenter (amy.x.li@unsw.edu.au). <br>When you are ready to begin, click on the "start" button below.</p>',
+    button_label: ['Start!']  
+  }
+
+  timeline.push(enter_fullscreen)
+
+  // -- BEGIN THE ACTUAL EXPERIMENT
+
+  // consent
+
+  var consent = {
+    type: 'html-button-response',
+    stimulus: '<p style="text-align:left;">Please click <a href="./docsCORICAL/consent.pdf" target="_blank">here</a> to view the Participant Information Statement and Consent Form. It will open in a new tab.</p>' +
+    '<p style="text-align:left;">After you have read the consent form, please read through the declaration below.<p>' +
+    '<p style="text-align:left;"><b>Declaration by the participant</b></p>' +
+    '<p style="text-align:left;">- I understand I am being asked to provide consent to participate in this research study; <br>' +
+    '- I have read the Participant Information Sheet or someone has read it to me in a language that I understand;  <br>' +
+    '- I understand the purposes, study tasks and risks of the research described in the study;<br>' +
+    '- I provide my consent for the information collected about me to be used for the purpose of this research study only.<br>' +
+    '- I have been given contact details of the researchers to enable me to ask questions about my participation.<br>' +
+    '- I freely agree to participate in this research study as described and understand that I am free to withdraw at any time during the study and withdrawal will not affect my relationship with any of the named organisations and/or research team members.<br></p>' +
+    '<p style="text-align:left;">By clicking on the button below, you consent to participate in this study, and the study will then begin.</p>'
+    ,
+    choices: ['I consent']
+  }
+
+  //timeline.push(consent)
+
+  // study info
+
+  var expStart = {
+    type: 'html-button-response',
+    stimulus: '<p>This study will take approximately 20 minutes. Please <u><b>do not</b></u> use the "back" button on your browser or close the window until you reach the end screen. If you do, you will not be able to continue the experiment. However, if something does go wrong, please contact us! <br> When you are ready to begin, click on the "start" button below. </p>',
+    choices: ['Start!'],
+  }
+
+  //timeline.push(expStart)
+
+  // demographics
+  var demographics = {
+    type: 'survey-html-form',
+    html: '<p style="text-align:left;"><b>Gender:</b> <input type="radio" name="gender" value="male" required><label>Male</label>    <input type="radio" name="gender" value="female"><label>Female</label>    <input type="radio" name="gender" value="non-binary"><label>Non-binary</label>    <input type="radio" name="gender" value="not listed"><label>Not listed here</label>    <input type="radio" name="gender" value="prefer not to say"><label>Prefer not to say</label></p>'+
+    '<p style="text-align:left;"><b>Age:</b> <input type="text" size="10"/></p>' +
+    '<p style="text-align:left;"><b>Ethnicity:</b>    <input type="radio" name="ethnicity" value="abtsi" required><label>ABTSI</label>    <input type="radio" name="ethnicity" value="white"><label>White</label>    <input type="radio" name="ethnicity" value="asian"><label>Asian</label>    <input type="radio" name="ethnicity" value="other"><label>Other</label>    <input type="radio" name="ethnicity" value="prefer not to say"><label>Prefer not to say</label></p>'+
+
+    '<p style="text-align:left;"><label for="education"><b>Highest level of education:  </b>'+
+        '<select id="education" name="education"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="below_hs">Less than high school</option>'+
+          '<option value="hs">High school gradulate</option>'+
+          '<option value="cert1_2">Certificate I or II</option>'+
+          '<option value="cert3_4">Certificate III or IV</option>'+
+          '<option value="undergrad>Diploma, Bachelor\'s degree, or equivalent</option>'+
+          '<option value="postgrad">Masters or Doctoral degree, or equivalent</option>'+
+        '</select><br></p>' +
+
+    '<p style="text-align:left;"><label for="location"><b>State/territory of current residence:  </b>'+
+        '<select id="location" name="location"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="act">Australian Capital Territory</option>'+
+          '<option value="nsw">New South Wales</option>'+
+          '<option value="nt">Northern Territory</option>'+
+          '<option value="qld">Queensland</option>'+
+          '<option value="sa>South Australia</option>'+
+          '<option value="tas">Tasmania</option>'+
+          '<option value="vic">Victoria</option>'+
+          '<option value="wa">Western Australia</option>'+
+        '</select><br></p>' +
+
+    '<p style="text-align:left;"><b>Postcode:  </b> <input type="text" size="10"/></p>' +
+
+    '<p style="text-align:left;"><b>Were you born in Australia?  </b><input type="radio" value="yes"><label>Yes</label>    <input type="radio" value="no"><label>No</label>'+
+    '<br>If "No":<br>'+
+      '   Which country were you born in? <input type="text" name = "bornOther" size="10"/><br>' +
+      '   In which year did you arrive in Australia? <input type="text" name = "yearImmigrate" size="10"/><br></p>' +
+
+    '<p style="text-align:left;"><b>What is the main language you speak at home?</b><input type="radio" value="english"><label>English</label>    <input type="radio" value="other"><label>Other</label>'+
+    '<br>If "Other":<br>'+
+      '   Which language? <input type="text" name = "otherLanguage" size="10"/></p>' +
+    
+    // Health-related
+    '<p style="text-align:left;"><b>How confident are you with filling out medical forms by yourself?<br></b><input type="radio" value="not"><label>Not at all</label>    <input type="radio" value="a bit"><label>A little bit</label>  <input type="radio" value="somewhat"><label>Somewhat</label> <input type="radio" value="quite a bit"><label>Quite a bit</label> <input type="radio" value="extremely"><label>Extremely</label></p>'+
+    
+    '<p style="text-align:left;"><b>Over the next 4 weeks, I plan to get tested if I have COVID-19 symptoms<br></b><input type="radio" value="1"><label>1 - Strongly disagree</label><input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7 - Strongly agree</label></p>'+
+    
+    '<p style="text-align:left;"><b>Imagine you woke up with a sore throat tomorrow. Would you get tested straight away?<br></b><input type="radio" value="1"><label>1 - Strongly disagree</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7 - Strongly agree</label></p>'+
+
+    '<p style="text-align:left;"><b>Please indicate how much you trust the following, with 1 being do not trust at all and 7 being trust very much:</b> <br>' +
+      ' a.	Scientists involved in developing and testing new ways to control COVID-19 <br><input type="radio" value="1"><label>1</label> <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7 </label><br>'+
+      ' b.	Researchers involved in tracking and predicting COVID-19 cases<br><input type="radio" value="1"><label>1</label> <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7 </label><br>'+
+      ' c.	Medical institutions (GPs, hospitals) involved in managing COVID-19 cases<br><input type="radio" value="1"><label>1</label> <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7 </label><br>'+
+      ' d.	Federal government agencies responsible for managing the control of COVID-19<br><input type="radio" value="1"><label>1</label> <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7 </label><br>'+
+      ' e.	State government agencies responsible for managing the control of COVID-19<br><input type="radio" value="1"><label>1</label> <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7 </label><br>'+
+    '</p>' +
+    
+    '<p style="text-align:left;"><label for="vaccinated"><b>Have you been vaccinated against COVID-19?  </b>'+
+        '<select id="vaccinated" name="vaccinated"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="both">Yes, I have had both vaccinations</option>'+
+          '<option value="one">Yes, I\’ve had one of my vaccinations</option>'+
+          '<option value="none">No, I\’ve not been vaccinated against COVID-19</option>'+
+        '</select><br>' +
+
+    '<label for="vaccinated_noreason">    If "No", select the option that best fits where you are now:'+
+        '<select id="vaccinated_noreason" name="vaccinated_noreason"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="booked">I have booked an appointment to get the COVID-19 vaccine</option>'+
+          '<option value="notbooked">I haven\’t yet booked an appointment to get the COVID-19 vaccine</option>'+
+          '<option value="unable">I have been unable to book an appointment to get the COVID-19 vaccine</option>'+
+          '<option value="wait">I have decided to wait to receive a COVID-19 vaccine later in the year</option>'+
+          '<option value="undecided">I have not yet decided whether to get vaccinated</option>'+
+          '<option value="decline">I have decided to not get vaccinated</option>'+
+    '</select>' + 
+    '<br><label for="vaccinated_yes">   If "Yes" to one or both, which COVID-19 vaccine did you have?'+
+        '<select id="vaccinated_yes" name="vaccinated_yes"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="pfizer">Pfizer (also called Comirnaty)</option>'+
+          '<option value="astra">AstraZeneca (also called Vaxzevria)</option>'+
+          '<option value="other">Other (please specify below)</option>'+
+      '</select><br>' + 
+        '   If "Other":<br>'+
+        '<input type="text" name = "vaccinated_yes_other" size="10"/><br>' +
+    '</p>'+
+
+    '<p style="text-align:left;"><b>Have you been tested for COVID-19 in the last month?</b><input type="radio" name="iftest_month" value="yes"><label>Yes</label>    <input type="radio" name="iftest_month" value="no"><label>No</label> <br>'+
+      '   If "Yes": <br> What was the outcome of the testing? <input type="radio" name="testresult_month" value="positive"><label>Positive</label>    <input type="radio" name="testresult_month" value="negative"><label>Negative</label> <input type="radio" name="testresult_month" value="pending"><label>Pending</label> <br>'+
+      '   If "No": <br> Why haven\’t you been tested? <input type="radio"  name="notest_reason_month" value="nosymptoms"><label>I have not had any symptoms or signs of COVID-19</label>    <input type="radio" name="notest_reason_month" value="other"><label>Any other reason (please explain below)</label> <br>'+
+        '<input type="text" name="notest_reason_other_month" size="10"/></p>' +
+    
+    '<p style="text-align:left;"><b>Have you been tested for COVID-19 in the last month?</b><input type="radio" name="iftest" value="yes"><label>Yes</label>    <input type="radio" name="iftest" value="no"><label>No</label><br>'+
+      '   If "Yes": <br> What was the outcome of the testing? <input type="radio" name="testresult" value="positive"><label>Positive</label>    <input type="radio" name="testresult" value="negative"><label>Negative</label> <input type="radio" name="testresult" value="pending"><label>Pending</label> <br>'+
+      '   If "No": <br> Why haven\’t you been tested? <input type="radio"  name="notest_reason" value="nosymptoms"><label>I have not had any symptoms or signs of COVID-19</label>    <input type="radio" name="notest_reason" value="other"><label>Any other reason (please explain below)</label> <br>'+
+        '<input type="text" name="notest_reason_other" size="10"/></p>' +
+    
+    '<p style="text-align:left;"><b>On a scale of 1 to 10, how serious of a public threat do you think COVID-19 is currently, in Australia?</b><br><input type="radio" value="1"><label>1</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5</label> <input type="radio" value="6"><label>6</label> <input type="radio" value="7"><label>7</label> <input type="radio" value="8"><label>8</label><input type="radio" value="9"><label>9</label> <input type="radio" value="10"><label>10</label></p>'+
+
+    '<p style="text-align:left;"><b>Do you think that you will get sick from COVID-19? </b><br><input type="radio" name ="sick_likelihood" value="no"><label>Not at all</label><input type="radio" name ="sick_likelihood" value="possible"><label>Possibly</label> <input type="radio" name ="sick_likelihood" value="probably"><label>Probably</label> <input type="radio" name ="sick_likelihood" value="definitely"><label>Definitely</label></p>' +
+
+    '<p style="text-align:left;"><b>How likely do you think it is that you or someone you know will get sick from COVID-19 this year?</b><br><input type="radio" name ="sick_likelihood_other" value="no"><label>Not at all</label><input type="radio" name ="sick_likelihood_other" value="possible"><label>Possibly</label> <input type="radio" name ="sick_likelihood_other" value="probably"><label>Probably</label> <input type="radio" name ="sick_likelihood_other" value="definitely"><label>Definitely</label></p>' +
+
+    // scale
+    '<p style="text-align:left;"><b>What is your gut feeling about how likely you are to get infected with COVID-19?</b><br><input type="radio" value="1"><label>1 - Extremely unlikely</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Extremely likely</label></p>'+
+    '<p style="text-align:left;"><b>Picturing myself getting COVID-19 is something I find...</b><br><input type="radio" value="1"><label>1 - Very hard to do<</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Extremely easy to do</label></p>'+
+    '<p style="text-align:left;"><b>I am sure I will NOT get infected with COVID-19</b><br><input type="radio" value="1"><label>1 - Strongly disagree</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Strongly agree</label></p>'+
+    '<p style="text-align:left;"><b>I feel I am unlikely to get infected with COVID-19</b><br><input type="radio" value="1"><label>1 - Strongly disagree</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Strongly agree</label></p>'+
+    '<p style="text-align:left;"><b>I feel vulnerable to COVID-19 infection</b><br><input type="radio" value="1"><label>1 - Strongly disagree</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Strongly agree</label></p>'+
+    '<p style="text-align:left;"><b>I think my chances of getting infected with COVID-19 are...</b><br><input type="radio" value="1"><label>1 - Zero</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Very large</label></p>',
+
+    button_label: 'Submit',
+  }
+
+  timeline.push(demographics)
+
+  // pre phase instructions
+  var introInstruct = {
+    type: 'html-button-response',
+    button_html: '<button class="jspsych-btn" style="display:none">%choice%</button>',
+    on_start: function () { setTimeout(function () { setDisplay("jspsych-btn", "") }, 10000) }, // show for 10s
+    stimulus: 
+      '<p><b>Child Protection Response Options in New South Wales</b></p>' +
+      '<p>Your goal in this experiment is to accurately categorize child protection scenarios in terms of the level of risk and response required.</p>' +
+      '<p>As the level of risk in a situation increases, so too does the invasiveness of the response required. Information about each risk/response category is presented in the table below. Each column represents a risk/response category.</p>' +
+      '<p>Please read each category carefully as you will not be able to return to this page.</p> '+
+      '<p><img src = imgCHILDPRO/RiskResponseTable.jpg width = 1500px></p>'
+    ,
+    choices: ['Next'],
+  }
+
+//  timeline.push(introInstruct)
+
+  var trial_understanding = {
+    type: 'survey-html-form',
+    html: function(){
+      return '<div id="versionContainer" class="container">'+
+      '<div class="row centered">'+
+        '<div id="version1" style="display:inline-block"><i style="display:block">Version 1</i><img src = '+ questions[trialN][0] + ' width = 700px></div>' +
+        '<div id="version2" style="display:inline-block"><i style="display:block">Version 2</i><img src = '+ questions[trialN][1] + ' width = 700px></div> <br>' +
+      '</div>'+
+      '<div class="row centered">'+
+        '<div id="version3" style="display:inline-block"><i style="display:block">Version 3</i><img src = '+ questions[trialN][2] + ' width = 700px></div>' +
+        '<div id="version4" style="display:inline-block"><i style="display:block">Version 4</i><img src = '+ questions[trialN][3] + ' width = 700px></div></div>' +
+      '</div>'+
+      '<br class="clearBoth" />' +
+
+      '<p>In terms of helping you evaluate the risks of choosing this vaccine, which version is...</p>'+
+      '<label for="easiest"><i>Easiest</i> to understand? '+
+        '<select id="easiest" name="easiest"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="1">Version 1</option>'+
+          '<option value="2">Version 2</option>'+
+          '<option value="3">Version 3</option>'+
+          '<option value="4">Version 4</option>'+
+        '</select><br>' +
+      '<label for="easiest_2">The <i>second easiest</i> to understand? '+
+        '<select required id="easiest_2" name="easiest_2"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="1">Version 1</option>'+
+          '<option value="2">Version 2</option>'+
+          '<option value="3">Version 3</option>'+
+          '<option value="4">Version 4</option>'+
+        '</select><br>' +
+      '<label for="difficult">The <i>most difficult</i> to understand? '+
+        '<select required id="difficult" name="difficult"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="1">Version 1</option>'+
+          '<option value="2">Version 2</option>'+
+          '<option value="3">Version 3</option>'+
+          '<option value="4">Version 4</option>'+
+        '</select><br>' 
+    }
+    ,
+    button_label: 'Submit',
+    on_finish: function(data){
+    },
+    post_trial_gap: 1500,
+  }
+
+  var trial_choice = {
+    type: 'survey-html-form',
+    html: function(){
+      return '<div id="versionContainer" class="container">'+
+      '<div class="row centered">'+
+        '<div id="version1" style="display:inline-block"><i style="display:block">Version 1</i><img src = '+ questions[trialN][0] + ' width = 700px></div>' +
+        '<div id="version2" style="display:inline-block"><i style="display:block">Version 2</i><img src = '+ questions[trialN][1] + ' width = 700px></div> <br>' +
+      '</div>'+
+      '<div class="row centered">'+
+        '<div id="version3" style="display:inline-block"><i style="display:block">Version 3</i><img src = '+ questions[trialN][2] + ' width = 700px></div>' +
+        '<div id="version4" style="display:inline-block"><i style="display:block">Version 4</i><img src = '+ questions[trialN][3] + ' width = 700px></div></div>' +
+      '</div>'+
+      '<br class="clearBoth" />' +
+
+      '<p>Which version would lead you to be...</p>'+
+      '<label for="most"><i>Most likely</i> to seek the vaccine? '+
+        '<select id="most" name="most"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="1">Version 1</option>'+
+          '<option value="2">Version 2</option>'+
+          '<option value="3">Version 3</option>'+
+          '<option value="4">Version 4</option>'+
+        '</select><br>' +
+      '<label for="most"><i>Second most likely</i> to seek the vaccine? '+
+        '<select id="second_most" name="second_most"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="1">Version 1</option>'+
+          '<option value="2">Version 2</option>'+
+          '<option value="3">Version 3</option>'+
+          '<option value="4">Version 4</option>'+
+        '</select><br>' +
+      '<label for="least"><i>Least likely</i> to seek the vaccine? '+
+        '<select id="least" name="least"></label>' +
+          '<option disabled selected value> -- Select an option -- </option>'+
+          '<option value="1">Version 1</option>'+
+          '<option value="2">Version 2</option>'+
+          '<option value="3">Version 3</option>'+
+          '<option value="4">Version 4</option>'+
+        '</select><br>' 
+    }
+    ,
+    button_label: 'Submit',
+    on_finish: function(data){
+      trialN += 1
+    },
+    post_trial_gap: 1500,
+  }
+
+  var trialBlock = {
+    timeline: [trial_understanding, trial_choice],
+    repetitions: 5,
+    randomize_order: false,
+  }
+
+  timeline.push(trialBlock)
+
+  // debrief
+
+  var debrief = {
+    type: 'html-button-response',
+    stimulus: 
+    '<p style="text-align:left;">Great! We are almost at the end of the study... (Please do not close the browser window yet.)</p>' +
+    '<p style="text-align:left;">To view the debriefing form, please click <a href="./docsCORICAL/debrief.pdf" target="_blank">here</a> to download a copy.</p>' +
+    '<p style="text-align:left;">You can also click <a href="./docsCORICAL/consent.pdf" target="_blank">here</a>  to download the informed consent form if you have not yet done so.</p>' +
+    '<p style="text-align:left;">Then, <b>please click the below button</b> to confirm that you have received your debrief and to complete the study.</p>'
+    ,
+    choices: ['Finish!']
+  }
+
+  timeline.push(debrief)
+
+  var exit_fullscreen = {
+    type: 'fullscreen',
+    fullscreen_mode: false,
+    delay_after: 0
+  }
+
+  timeline.push(exit_fullscreen)
+
+  // start the experiment
+  startExperiment()
+
+  </script>
+</html>
