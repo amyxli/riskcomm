@@ -311,7 +311,7 @@
 
     // scale
     '<p style="text-align:left;"><b>What is your gut feeling about how likely you are to get infected with COVID-19?</b><br><input type="radio" value="1"><label>1 - Extremely unlikely</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Extremely likely</label></p>'+
-    '<p style="text-align:left;"><b>Picturing myself getting COVID-19 is something I find...</b><br><input type="radio" value="1"><label>1 - Very hard to do<</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Extremely easy to do</label></p>'+
+    '<p style="text-align:left;"><b>Picturing myself getting COVID-19 is something I find...</b><br><input type="radio" value="1"><label>1 - Very hard to do</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Extremely easy to do</label></p>'+
     '<p style="text-align:left;"><b>I am sure I will NOT get infected with COVID-19</b><br><input type="radio" value="1"><label>1 - Strongly disagree</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Strongly agree</label></p>'+
     '<p style="text-align:left;"><b>I feel I am unlikely to get infected with COVID-19</b><br><input type="radio" value="1"><label>1 - Strongly disagree</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Strongly agree</label></p>'+
     '<p style="text-align:left;"><b>I feel vulnerable to COVID-19 infection</b><br><input type="radio" value="1"><label>1 - Strongly disagree</label>    <input type="radio" value="2"><label>2</label>  <input type="radio" value="3"><label>3</label> <input type="radio" value="4"><label>4</label> <input type="radio" value="5"><label>5 - Strongly agree</label></p>'+
@@ -324,20 +324,20 @@
 
   // pre phase instructions
   var introInstruct = {
-    type: 'html-button-response',
-    button_html: '<button class="jspsych-btn" style="display:none">%choice%</button>',
-    on_start: function () { setTimeout(function () { setDisplay("jspsych-btn", "") }, 10000) }, // show for 10s
-    stimulus: 
-      '<p><b>Child Protection Response Options in New South Wales</b></p>' +
-      '<p>Your goal in this experiment is to accurately categorize child protection scenarios in terms of the level of risk and response required.</p>' +
-      '<p>As the level of risk in a situation increases, so too does the invasiveness of the response required. Information about each risk/response category is presented in the table below. Each column represents a risk/response category.</p>' +
-      '<p>Please read each category carefully as you will not be able to return to this page.</p> '+
-      '<p><img src = imgCHILDPRO/RiskResponseTable.jpg width = 1500px></p>'
-    ,
-    choices: ['Next'],
+    type: 'instructions',
+    //button_html: '<button class="jspsych-btn" style="display:none">%choice%</button>',
+    //on_start: function () { setTimeout(function () { setDisplay("jspsych-btn", "") }, 10000) }, // show for 10s
+    pages: [
+      '<p><img src = imgCORICAL/instruct_1.png width = 1000px></p>',
+      '<p><img src = imgCORICAL/instruct_2.png width = 1000px></p>',
+      '<p><img src = imgCORICAL/instruct_3.png width = 1000px></p>',
+      '<p><img src = imgCORICAL/instruct_4.png width = 1000px></p>',
+      '<p>And that\'s it! When you are ready, click the button below to start the task.</p>'
+    ],
+    show_clickable_nav: true,
   }
 
-//  timeline.push(introInstruct)
+  timeline.push(introInstruct)
 
   var trial_understanding = {
     type: 'survey-html-form',
@@ -431,11 +431,18 @@
     on_finish: function(data){
       trialN += 1
     },
-    post_trial_gap: 1500,
+    post_trial_gap: 0,
+  }
+
+  var loading = { // "loading next trial"
+    type: 'html-keyboard-response',
+    choices: jsPsych.NO_KEYS,
+    stimulus: '<p style="font-size:50px">Loading next trial...</p>',
+    trial_duration: 3000, 
   }
 
   var trialBlock = {
-    timeline: [trial_understanding, trial_choice],
+    timeline: [trial_understanding, trial_choice, loading],
     repetitions: 5,
     randomize_order: false,
   }
