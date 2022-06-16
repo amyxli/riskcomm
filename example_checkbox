@@ -1,0 +1,677 @@
+<!doctype html>
+<html>
+
+  <head>
+    <title>UNSW CCS</title>
+    <script src="https://code.jquery.com/jquery-2.1.4.js" integrity="sha256-siFczlgw4jULnUICcdm9gjQPZkw/YPDqhQ9+nAOScE4=" crossorigin="anonymous"></script>
+    <script src="./jsCHILDPRO/jspsych.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-preload.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-fullscreen.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-instructions.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-survey-multi-choice.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-survey-multi-select.js"></script>
+	  <script src="./jsCHILDPRO/plugins/jspsych-html-button-response.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-survey-likert.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-survey-text.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="./jsCHILDPRO/plugins/jspsych-survey-html-form.js"></script>
+    <link href="./jsCHILDPRO/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+  </head>
+
+  <style>
+    .tooltip {
+      display:inline-block;
+      position:relative;
+    }
+    span.tooltiptext {
+      position:absolute;
+      top:-130px;
+      left:-50px;
+      visibility:hidden;
+      border-radius: 5px;  
+      background: #d3d3d3;
+      width: max-content; 
+      max-width: 600px;
+      z-index: 9;
+    }
+    input {
+      position:inline;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility:visible;
+    }
+
+  </style>
+
+  <script>
+  
+  /* initialise timeline*/
+  var timeline=[];
+  var introloop=[];
+
+  window.onbeforeunload = function(){
+    return "Are you sure you want to leave the experiment?";
+    };
+
+
+
+  /* define functions needed */
+
+  // change the display property of a set of objects: this is used to hide the "submit"/"next" etc button to proceed
+  // to next trial for X seconds
+  
+  function setDisplay(theClass, theValue) {
+        var i, classElements = document.getElementsByClassName(theClass);
+        for (i = 0; i < classElements.length; i = i + 1) {
+            classElements[i].style.display = theValue;
+        }
+    };
+
+  function shuffle(array) {
+      var currentIndex = array.length, temporaryValue, randomIndex;
+
+      // While there remain elements to shuffle...
+      while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+      }
+
+      return array;
+  }
+
+  function saveData(name, data){
+    	var xhr = new XMLHttpRequest();
+    	xhr.open('POST', 'save_data.php'); // 'write_data.php' is the path to the php file described above.
+    	xhr.setRequestHeader('Content-Type', 'application/json');
+    	xhr.send(JSON.stringify({filename: filename, filedata: data})); //specify a variable "filename"
+  };
+
+  window.onbeforeunload = function(){
+    	return "Are you sure you want to leave the experiment?";
+  };
+
+  function startExperiment(){
+      function download_data(data) {
+        var csvString = jsPsych.data.dataAsCSV();
+        var a = document.createElement('a');
+        a.href = 'data:attachment/csv,' + csvString;
+        a.target = '_blank';
+        a.download = 'ExperimentData.csv';
+
+        document.body.appendChild(a);
+        a.click();
+      };
+
+      jsPsych.data.addProperties({
+        condition: condition
+      });
+      /* start the experiment */
+      jsPsych.init({
+        timeline: timeline,
+        show_progress_bar: false,
+        on_finish: function() {
+          jsPsych.data.get().localSave('csv','test.csv')
+         }, // uncomment to locally save data file */
+         /*on_finish: function(data){
+			    saveData(filename, jsPsych.data.get().csv());
+			    document.write('<div id="endscreen" class="endscreen" style="width:1000px"><div class="endscreen" style="text-align:center; border:0px solid; padding:10px; font-size:120%; width:800px; float:right"><p><br><br><br>The study is now complete. Thank you for your participation!<br><br>You can now close this window.</p></div></div>')
+		    }*/
+      });
+      };
+
+  /* variables for trial options */
+
+    
+  var category_buttons = [ // stylised as checkboxes
+    '<input type="radio"  name="cat" id="NCP" value="NCP"><img src= "imgCHILDPRO/Category_button_NCP.jpg" width = 230px>',
+    '<input type="radio"  name="cat" id="PROB" value="PROB" required><img src= "imgCHILDPRO/Category_button_PROB.jpg" width = 230px>',
+    '<input type="radio"  name="cat" id="HRN" value="HRN" required><img src= "imgCHILDPRO/Category_button_HRN.jpg" width = 230px>' ,
+    '<input type="radio"  name="cat" id="sROSH" value="sROSH" required><img src= "imgCHILDPRO/Category_button_sROSH.jpg" width = 230px>',
+    '<input type="radio"  name="cat" id="iROSH" value="iROSH" required><img src= "imgCHILDPRO/Category_button_iROSH.jpg" width = 230px>',
+  ];
+
+
+  var category_imgs = [ // stylised as just images
+    '<img src= "imgCHILDPRO/Category_button_NCP.jpg" width = 230px>',
+    '<img src= "imgCHILDPRO/Category_button_PROB.jpg" width = 230px>',
+    '<img src= "imgCHILDPRO/Category_button_HRN.jpg" width = 230px>' ,
+    '<img src= "imgCHILDPRO/Category_button_sROSH.jpg" width = 230px>',
+    '<img src= "imgCHILDPRO/Category_button_iROSH.jpg" width = 230px>',
+  ];
+
+
+  var confidence_buttons = [
+    '<input type="radio"  name="conf" id="0conf" value="0"><img src= "imgCHILDPRO/confidence_0.jpg" width = 160px>',
+    '<input type="radio"  name="conf" id="1conf" value="1" required ><img src= "imgCHILDPRO/confidence_1.jpg" width = 160px>',
+    '<input type="radio"  name="conf" id="2conf" value="2" required><img src= "imgCHILDPRO/confidence_2.jpg" width = 160px>',
+    '<input type="radio"  name="conf" id="3conf" value="3" required><img src= "imgCHILDPRO/confidence_3.jpg" width = 160px>',
+    '<input type="radio"  name="conf" id="4conf" value="4" required><img src= "imgCHILDPRO/confidence_4.jpg" width = 160px>',
+  ];
+    
+  var feature_buttons = shuffle([
+    '<div class="tooltip"> <input type="checkbox"  name="harm" id="harm" value="checked" onclick="javascript:featureConstrain();"> <img src= "imgCHILDPRO/harm.jpg" width = 160px>' +
+      ' <span class="tooltiptext"> <b>Harm: </b>What is the harm I am concerned about? If there is an injury, was it likely to be accidental or non-accidental?  </span></div>', 
+    '<div class="tooltip"> <input type="checkbox"  name="likelihood" id="likelihood" value="checked" onclick="javascript:featureConstrain();"><img src= "imgCHILDPRO/likelihood.jpg" width = 160px>' +
+      '<span class="tooltiptext"> <b>Likelihood: </b>How <i>likely</i> is it that this harm will occur in the future?  </span></div> ', 
+    '<div class="tooltip"> <input type="checkbox"  name="immediacy" id="immediacy" value="checked" onclick="javascript:featureConstrain();"><img src= "imgCHILDPRO/immediacy.jpg" width = 160px>' +
+      ' <span class="tooltiptext"> <b>Immediacy: </b>How soon might this harm occur?  </span></div>', 
+    '<div class="tooltip"> <input type="checkbox"  name="child/young person\'s opinion" id="checked" value="checked" onclick="javascript:featureConstrain();"><img src= "imgCHILDPRO/child.jpg" width = 160px>' +
+      '<span class="tooltiptext"> <b>Child/young person\'s opinion: </b>What does the child/young person say about the situation?  </span></div> ', 
+    '<div class="tooltip"> <input type="checkbox"  name="caregiver role" id="caregiver" value="checked" onclick="javascript:featureConstrain();">'+
+      '<img src= "imgCHILDPRO/caregiver.jpg" width = 160px><span class="tooltiptext"> <b>Caregiver role: </b>How is the caregiver contributing to the harm to the child/young person? Are they directly causing, contributing to, or exacerbating the harm by omission (neglect/failing to act) or commission (abuse)?  Are there specific caregiver risk factors (e.g., caregiver has their own significant abuse/neglect history, caregiver has quite punitive attitudes towards discipline, home environment is volatile).</span></div>', 
+    '<div class="tooltip"> <input type="checkbox"  name="duration" id="duration" value="checked" onclick="javascript:featureConstrain();">'+
+      '<img src= "imgCHILDPRO/duration.jpg" width = 160px><span class="tooltiptext"> <b>Duration: </b>How long have the issues causing the harm been present for? Has there been a previous non-accidental injury? Is there a pattern of issues/ injuries or a one-off? <br>If there is a pattern - what does this pattern look like?  </span></div>', 
+    '<div class="tooltip"> <input type="checkbox"  name="household occupants" id="household" value="checked" onclick="javascript:featureConstrain();">'+
+      '<img src= "imgCHILDPRO/household.jpg" width = 160px> <span class="tooltiptext"> <b>Household occupants: </b>Who resides in the home with the child/young person, and what is their role? Are they protective or do they pose additional risks?  </span></div>', 
+    '<div class="tooltip"> <input type="checkbox"  name="impact and severity" id="impact" value="checked" onclick="javascript:featureConstrain();">'+
+      '<img src= "imgCHILDPRO/impact.jpg" width = 160px><span class="tooltiptext"><b>Impact and severity: </b> What is the impact that the issue of concern is having, or is likely to have, on the child/young person, and how severe is this (e.g., hurt feelings, psychological damage, minor/major physical injury, death)?  </span></div>', 
+    '<div class="tooltip"> <input type="checkbox"  name="supports" id="supports" value="checked" onclick="javascript:featureConstrain();">'+
+      '<img src= "imgCHILDPRO/supports.jpg" width = 160px><span class="tooltiptext"><b>Supports: </b> What supports does the family have (informal - i.e., family and friends, and formal - i.e., professional support services)? If support services are present, what is the family\'s attitude towards and engagement with these services?  </span></div>', 
+    '<div class="tooltip"> <input type="checkbox"  name="vulnerabilities" id="vulnerable" value="checked" onclick="javascript:featureConstrain();">'+
+      '<img src= "imgCHILDPRO/vulnerable.jpg" width = 160px><span class="tooltiptext"><b>Vulnerabilities: </b> Is the child/young person vulnerable (e.g., an infant, below 5 years of age, has medical or developmental issues)  </span></div>'
+  ]);
+
+  /* define images needed */
+
+  var images = [
+    'imgCHILDPRO/RiskResponseTable.jpg',
+    'imgCHILDPRO/FeatureTable.png',
+
+    'imgCHILDPRO/Category_button_NCP.jpg',
+    'imgCHILDPRO/Category_button_Prob.jpg',
+    'imgCHILDPRO/Category_button_HRN.jpg',
+    'imgCHILDPRO/Category_button_sROSH.jpg',
+    'imgCHILDPRO/Category_button_iROSH.jpg',
+
+    'imgCHILDPRO/greenTick.png',
+    'imgCHILDPRO/redCross.png',
+
+    'imgCHILDPRO/NCP_67a.jpg',
+    'imgCHILDPRO/NCP_67b.jpg',
+    'imgCHILDPRO/NCP_68c.jpg',
+    'imgCHILDPRO/NCP_114b.jpg',
+
+    'imgCHILDPRO/NCP_67a_feedback.jpg',
+    'imgCHILDPRO/NCP_67b_feedback.jpg',
+    'imgCHILDPRO/NCP_68c_feedback.jpg',
+    'imgCHILDPRO/NCP_114b_feedback.jpg',
+
+    'imgCHILDPRO/PROB_23d.jpg',
+    'imgCHILDPRO/PROB_70e.jpg',
+    'imgCHILDPRO/PROB_72b.jpg',
+    'imgCHILDPRO/PROB_132b.jpg',
+
+    'imgCHILDPRO/PROB_23d_feedback.jpg',
+    'imgCHILDPRO/PROB_70e_feedback.jpg',
+    'imgCHILDPRO/PROB_72b_feedback.jpg',
+    'imgCHILDPRO/PROB_132b_feedback.jpg',
+    
+    'imgCHILDPRO/HRN_23b.jpg',
+    'imgCHILDPRO/HRN_43.jpg',
+    'imgCHILDPRO/HRN_66a.jpg',
+    'imgCHILDPRO/HRN_70a.jpg',
+
+    'imgCHILDPRO/HRN_23b_feedback.jpg',
+    'imgCHILDPRO/HRN_43_feedback.jpg',
+    'imgCHILDPRO/HRN_66a_feedback.jpg',
+    'imgCHILDPRO/HRN_70a_feedback.jpg',
+
+    'imgCHILDPRO/sROSH_68b.jpg',
+    'imgCHILDPRO/sROSH_72a.jpg',
+    'imgCHILDPRO/sROSH_76e.jpg',
+    'imgCHILDPRO/sROSH_146a.jpg',
+
+    'imgCHILDPRO/sROSH_68b_feedback.jpg',
+    'imgCHILDPRO/sROSH_72a_feedback.jpg',
+    'imgCHILDPRO/sROSH_76e_feedback.jpg',
+    'imgCHILDPRO/sROSH_146a_feedback.jpg',
+
+    'imgCHILDPRO/iROSH_114a.jpg',
+    'imgCHILDPRO/iROSH_116.jpg',
+    'imgCHILDPRO/iROSH_130a.jpg',
+    'imgCHILDPRO/iROSH_144a.jpg',
+
+    'imgCHILDPRO/iROSH_114a_feedback.jpg',
+    'imgCHILDPRO/iROSH_116_feedback.jpg',
+    'imgCHILDPRO/iROSH_130a_feedback.jpg',
+    'imgCHILDPRO/iROSH_144a_feedback.jpg',
+  ];
+  
+  // store each category of scenario as array
+  var NCPscenarios = shuffle([
+    'NCP_67a',
+    'NCP_67b',
+    'NCP_68c',
+    'NCP_114b'
+  ])
+
+  var PROBscenarios = shuffle([
+    'PROB_23d',
+    'PROB_70e',
+    'PROB_72b',
+    'PROB_132b',
+  ])
+  var HRNscenarios = shuffle([
+    'HRN_23b',
+    'HRN_43',
+    'HRN_66a',
+    'HRN_70a',
+  ])
+  var sROSHscenarios = shuffle([
+   'sROSH_68b',
+    'sROSH_72a',
+    'sROSH_76e',
+    'sROSH_146a',
+  ])
+  var iROSHscenarios = shuffle([
+    'iROSH_114a',
+    'iROSH_116',
+    'iROSH_130a',
+    'iROSH_144a',
+  ])
+  var EMOscenarios = shuffle([
+    'NCP_72c_EMO',
+    'PROB_76a_EMO',
+    'HRN_90d_EMO',
+    'sROSH_3a_EMO',
+    'iROSH_17b_EMO'
+  ])
+
+  var preScenarios = NCPscenarios.slice(0,1).concat(
+    PROBscenarios.slice(0,1).concat(
+      HRNscenarios.slice(0,1).concat(
+        sROSHscenarios.slice(0,1).concat(
+          iROSHscenarios.slice(0,1)
+        )
+      )
+    )
+  )
+  var preScenarios = shuffle(preScenarios)
+
+  var mainScenarios = NCPscenarios.slice(1,3).concat(
+    PROBscenarios.slice(1,3).concat(
+      HRNscenarios.slice(1,3).concat(
+        sROSHscenarios.slice(1,3).concat(
+          iROSHscenarios.slice(1,3)
+        )
+      )
+    )
+  )
+  var mainScenarios = shuffle(mainScenarios)
+
+  var postScenarios = NCPscenarios.slice(3).concat(
+    PROBscenarios.slice(3).concat(
+      HRNscenarios.slice(3).concat(
+        sROSHscenarios.slice(3).concat(
+          iROSHscenarios.slice(3). concat(
+            EMOscenarios.slice(0,5)
+          )
+        )
+      )
+    )
+  )
+  var postScenarios = shuffle(postScenarios)
+
+  // functions we need
+
+    // first define data variables needed
+    var currScenarios = ''
+    var currN = ''
+
+    var corrCat = ''
+    var phase = ''
+    // set trial numbers
+    var preN = 0
+    var mainN = 0
+    var postN = 0
+
+  function setCurr(){ // what is the current scenario and trial number array?
+    if (phase == 'pre'){
+      currScenarios = preScenarios;
+      currN = preN;
+    } else if (phase == 'main'){
+      currScenarios = mainScenarios;
+      currN = mainN;
+    } else if (phase == 'post'){
+      currScenarios = postScenarios;
+      currN = postN;
+    }
+  }
+
+  function getCorrCat(){
+    var currStim = currScenarios[currN]
+    corrCat = currStim.slice(0, currStim.indexOf('_')) // will return the first part of variable name before underscore _
+  }
+
+  function getCatFeedback(){ //feedback about whether category chosen was correct
+    var lastResp = jsPsych.data.get().last(1).values()[0].responses;
+    var catChosen = JSON.parse(lastResp).cat // change back from string to an object, so we can access property "cat"
+    var catChosenIndex = category_buttons.findIndex(el => el.includes(catChosen)) // index from array of buttons that matches the cat chosen
+    var corrCatIndex = category_buttons.findIndex(el => el.includes(corrCat)) // index from array of buttons that matches the cat that is correct
+    if (lastResp.includes(corrCat)){
+      return '<div><div class = style=text-align:center><img src="imgCHILDPRO/greenTick.png" width = 240px></div><br><br>' +
+      '<br><div>' +
+        '<div class="half-width"><b>You chose:</b><br>' + category_imgs[catChosenIndex] + '</div>' +
+        '<div class="half-width"><b>Child protection experts chose:</b><br>' + category_imgs[corrCatIndex] + '</div>' +
+      '</div><br>'
+    } else {
+      return '<div><div class = style=text-align:center><img src="imgCHILDPRO/redCross.png" width = 240px></div><br><br>' +
+      '<br><div>' +
+        '<div class="half-width"><b>You chose:</b><br>' + category_imgs[catChosenIndex] + '</div>' +
+        '<div class="half-width"><b>Child protection experts chose:</b><br>' + category_imgs[corrCatIndex]+ '</div>' +
+      '</div><br>'
+    }
+  }
+
+  function getExpFeedback(){
+    var currStim = mainScenarios[mainN]
+    return currStim + '_feedback'  
+  }
+
+  function getFeatureFeedback(){
+    var lastResp = jsPsych.data.get().last(1).values()[0].responses;
+    var featuresChosen = Object.keys(
+        JSON.parse(lastResp) // convert to object
+      ).slice(0,3);
+    return '<p>You chose the following features as the most important for making your decision: <br>' + 
+    '<b>' + featuresChosen[0] + '</b>, ' + 
+    '<b>' + featuresChosen[1] + '</b>, and ' +  //  to do: shift to under expert paragraph
+      '<b>' + featuresChosen[2] + '</b>. </p>' 
+  }
+
+  // define condition allocation
+  var condition = ['noFB', 'expert', 'feature', 'both'];
+  var condition = jsPsych.randomization.sampleWithoutReplacement(condition, 1)[0]; // randomly allocate to one
+
+  // preload media
+  var preload = {
+    type: 'preload',
+    images: images,
+  }
+
+  timeline.push(preload)
+
+  // welcome message
+  var enter_fullscreen = {
+    type: 'fullscreen',
+    fullscreen_mode: true,
+    message: '<p style="text-align:left;">Welcome and thank you for signing up to participate in this study.'+
+    '<p style="text-align:left;"><b>Improving decision making responses to novel child protection scenarios</b> is a study examining factors that aid decision-making in a child protection context.</p>' +
+    '<p style="text-align:left;">It involves the following steps:</p>' +
+      '<p style="text-align:left;">1. Because this is a University research project, we ask for your informed consent. <br>' +
+      '2. We will then ask you some demographics questions. <br>' +
+      '3. Next, we give you the experiment itself with instructions to explain the task. <br>' +
+      '4. Finally, you will be debriefed about the purpose of the task you have completed. </p>' + 
+    '<p style="text-align:left;">The total time taken should be about 60 minutes. Please do not use the "back" button on your browser or close the window until you reach the end.'+
+    '<br>If something does go wrong, please contact the experimenter (amy.x.li@unsw.edu.au). <br>When you are ready to begin, click on the "start" button below.</p>',
+    button_label: ['Start!']  
+  }
+
+  timeline.push(enter_fullscreen)
+
+  // -- BEGIN THE ACTUAL EXPERIMENT
+
+  function featureConstrain(){
+    $("input:checkbox").click(function(){
+      if ($("input:checkbox:checked").length > 3){
+        return false;
+      }
+    });
+  }
+
+  function featureValidate(){
+    if ((condition == 'feature' && phase == 'main')| (condition == 'both' && phase == 'main')){ //  for conditions involving feature feedback, in main phase
+      if ($("input:checkbox:checked").length < 3){ // need to validate that at least 3 feature options checked 
+      alert('Please make sure you have completed all required responses.'); // if condiiton not met alert
+      returnToPreviousPage(); // and prevent form submission: defined below
+     }
+    } else {
+      // do absolutely nothing
+    }
+  }
+
+  // function to stop form submission
+  function returnToPreviousPage (e) {
+    e = e || window.event;
+    // validation code
+
+    // if invalid
+    if (e.preventDefault) {
+      e.preventDefault();
+    } else {
+      e.returnValue = false;
+    }
+  } 
+
+  // main phase instructions
+
+  var featureInstruct = {
+    type: 'html-button-response',
+    button_html: '<button class="jspsych-btn" style="display:none">%choice%</button>',
+    on_start: function () { setTimeout(function () { setDisplay("jspsych-btn", "") }, 10000) }, // show for 10s
+    stimulus:
+    'You are now going to learn about some of the common features child protection experts use when making their decisions.' +
+    '<br><b>Please read these carefully</b> as you will be asked to consider these features when making your decisions in the next block of scenarios.' +
+    '<p><img src = "imgCHILDPRO/FeatureTable.png" width = 1200px></p>',
+    choices: ['Next'],
+  }
+  
+  
+var ifShowFeature = {
+    timeline: [featureInstruct],
+    conditional_function: function(){
+        if(condition == 'feature' | condition == 'both'){
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+timeline.push(ifShowFeature)
+
+  var mainInstruct = {
+    type: 'html-button-response',
+    stimulus: function(){
+      var instructDisplay = '';
+      instructDisplay += '<p><b>You are now entering Block B</b></p>' +
+      '<p>On the following pages you will be presented with a number of scenarios.</p>' +
+      '<p>As before, your task is to choose the most appropriate risk/response category. ';
+      if (condition == 'feature' | condition == 'both'){
+        instructDisplay += 'This time, before making your choice, you will be asked to consider the three most important features you considered in making your decision. '
+      }
+      if (condition == 'expert' | condition == 'both'){
+        instructDisplay += 'After making your choice, you will be provided with expert reasoning feedback from our child protection experts. '
+      }
+      instructDisplay += '</p>'
+      instructDisplay += '<p>Try to be as accurate as you can.</p>'
+      return instructDisplay
+    }
+    ,
+    choices: ['Continue'],
+    on_finish: function(data){
+      phase = 'main';
+    }  
+  }
+
+  timeline.push(mainInstruct)
+
+  // main trial for feature-included conditions
+
+  var mainTrial_feature = {
+    type: 'survey-html-form',
+    on_start: function(data){
+      setCurr();
+      getCorrCat();
+      feature_buttons = shuffle(feature_buttons) // randomise feature order on every trial
+      setTimeout(function () { setDisplay("jspsych-btn", "") }, 30000)  // show for 30s
+    },
+    html: function(){
+      return '<p>After reading the scenario, choose (by clicking on) the risk/response category you think is most appropriate based on the information provided. </p>' +
+      '<p><img src = imgCHILDPRO/'+ mainScenarios[mainN] + '.jpg width = 800px></p>' +
+
+      '<p>Before making your risk category choice, please choose the <b>three most important features</b> you considered in making this decision for this scenario. This does <u>not</u> mean you did not consider other factors to be important in making your decision.</p>' +
+      '<p>' +
+      feature_buttons[0] + '   ' + 
+      feature_buttons[1] + '   ' + 
+      feature_buttons[2] + '   ' + 
+      feature_buttons[3] + '   ' + 
+      feature_buttons[4] + '<br>' + 
+      feature_buttons[5] + '   ' + 
+      feature_buttons[6] + '   ' + 
+      feature_buttons[7] + '   ' + 
+      feature_buttons[8] + '   ' + 
+      feature_buttons[9] + '   ' + 
+      '</p>' + 
+
+      '<p>Please select the Risk/Response category you think is most appropriate.</p>' +
+      '<p>' + category_buttons[0] + category_buttons[1] + category_buttons[2] + category_buttons[3] + category_buttons[4] + '</p>'+
+
+      '<p>How confident are you that your choice is correct?</p>' +
+      '<p>' + confidence_buttons[0] + confidence_buttons[1] + confidence_buttons[2] + confidence_buttons[3] + confidence_buttons[4] + '</p>'
+      //'<div class="slidecontainer"> <input type="range" min="1" max="100" value="50" class="slider" id="myRange"></div>'
+    },
+    button_label: 'Submit',
+    on_finish: function(data){
+      data.trialN = mainN; // record trial number
+      data.phase = phase; // record phase
+      var lastResp = jsPsych.data.get().last(1).values()[0].responses
+      var catChosen = JSON.parse(lastResp).cat; // change back from string to an object, so we can access property "cat"
+
+      if (lastResp.includes(corrCat)){data.respCorr = 'correct'} else {data.respCorr ='incorrect'} // record if category response was correct
+      data.scenario = mainScenarios[mainN] // record the scenario
+      data.corrCat = corrCat;
+      data.catChosen = catChosen;
+
+      // don't yet accumulate mainN -> this will happen during the feedback
+    },
+  }
+
+  
+  // main trial for no feature conditions
+  var mainTrial_noFeature = {
+    type: 'survey-html-form',
+    on_start: function(data){
+      phase = 'main';
+      setCurr();
+      getCorrCat();
+      feature_buttons = shuffle(feature_buttons) // randomise feature order on every trial
+      setTimeout(function () { setDisplay("jspsych-btn", "") }, 30000)  // show for 30s
+    },
+    html: function(){
+      return '<p>After reading the scenario, choose (by clicking on) the risk/response category you think is most appropriate based on the information provided. </p>' +
+      '<p><img src = imgCHILDPRO/'+ mainScenarios[mainN] + '.jpg width = 800px></p>' +
+
+      '<p>Please select the Risk/Response category you think is most appropriate.</p>' +
+      '<p>' + category_buttons[0] + category_buttons[1] + category_buttons[2] + category_buttons[3] + category_buttons[4] + '</p>'+
+
+      '<p>How confident are you that your choice is correct?</p>' +
+      '<p>' + confidence_buttons[0] + confidence_buttons[1] + confidence_buttons[2] + confidence_buttons[3] + confidence_buttons[4] + '</p>'
+    },
+    button_label: 'Submit',
+    on_finish: function(data){
+      data.trialN = mainN; // record trial number
+      data.phase = phase; // record phase
+      var lastResp = jsPsych.data.get().last(1).values()[0].responses
+      var catChosen = JSON.parse(lastResp).cat; // change back from string to an object, so we can access property "cat"
+    
+      if (lastResp.includes(corrCat)){data.respCorr = 'correct'} else {data.respCorr ='incorrect'} // record if category response was correct
+      data.scenario = mainScenarios[mainN] // record the scenario
+      data.corrCat = corrCat;
+      data.catChosen = catChosen;
+
+      // don't yet accumulate mainN -> this will happen during the feedback
+    },
+  }
+
+  var feedback = {
+    type: 'html-button-response',
+    stimulus: function(){
+      var feedbackDisplay = ''; // start off with intiailising the display variable
+      if (condition == 'expert'){
+        feedbackDisplay += getCatFeedback() + // add the category feedback
+       '<p><img src = imgCHILDPRO/' + getExpFeedback() + '.jpg width = 700px></p>' // and expert reasoning...
+      } else if (condition == 'feature'){
+        feedbackDisplay += getFeatureFeedback() // add the feature feedback
+      } else if (condition == 'both'){
+        feedbackDisplay += getCatFeedback() + // add the category feedback
+       '<p><img src = imgCHILDPRO/' + getExpFeedback() + '.jpg width = 700px></p>' // and expert reasoning...
+       feedbackDisplay += getFeatureFeedback() // add the feature feedback
+      }
+      return feedbackDisplay;
+    },
+    choices: ['Continue'],
+    on_finish: function(data){
+      data.trialN = mainN;
+      mainN += 1
+    }  
+  }
+
+  var feedbackDummy = { // dummy feedback so that the "noFB" condition still accumulates trial number
+    type: 'html-keyboard-response',
+    choices: jsPsych.NO_KEYS,
+    stimulus: '',
+    trial_duration: 2000, 
+    on_finish: function(data){
+      data.trialN = mainN;
+      mainN += 1
+    }  
+
+  }
+  
+  var mainBlock_noFB = {
+      timeline: [mainTrial_noFeature, feedbackDummy],
+      repetitions: 10,
+      randomize_order: true,
+  }
+
+  var mainBlock_expert = {
+      timeline: [mainTrial_noFeature, feedback],
+      repetitions: 10,
+      randomize_order: true,
+  }
+
+  var mainBlock_feature = {
+      timeline: [mainTrial_feature, feedback], // to do: replace feedback with feature only feedback
+      repetitions: 10,
+      randomize_order: true,
+  }
+
+ var mainBlock_both = {
+      timeline: [mainTrial_feature, feedback],
+      repetitions: 10,
+      randomize_order: true,
+  }
+
+  // depending on condition assigned, have difference main block sequence
+  if (condition == 'noFB'){
+    timeline.push(mainBlock_noFB)
+  } else if (condition == 'expert'){
+    timeline.push(mainBlock_expert)
+  } else if (condition == 'feature'){
+   timeline.push(mainBlock_feature)
+  } else if (condition == 'both'){
+   timeline.push(mainBlock_both)
+  }
+
+
+  var exit_fullscreen = {
+    type: 'fullscreen',
+    fullscreen_mode: false,
+    delay_after: 0
+  }
+
+  timeline.push(exit_fullscreen)
+
+  // start the experiment
+  startExperiment()
+
+  </script>
+</html>
